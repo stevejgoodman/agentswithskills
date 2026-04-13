@@ -14,10 +14,17 @@ dependencies = [
     "tavily-python>=0.5.0",
     "httpx>=0.28.1",
     "markdownify>=1.2.0",
-    "deepagents>=0.2.6",
+    "deepagents>=0.2.8",
+    "arxiv>=2.1.0",
     "python-dotenv>=1.0.0",
     "langgraph-cli[inmem]>=0.1.55",
     "langchain-google-genai>=3.1.0",
+    "langsmith[pytest]>=0.7.26",
+    "docling-core>=2.73.0",
+    "docling>=2.87.0",
+    "langchain-community>=0.4.1",
+    "html2text>=2025.4.15",
+    "boto3>=1.42.88",
 ]
 
 [project.optional-dependencies]

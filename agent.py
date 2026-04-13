@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain_google_genai import ChatGoogleGenerativeAI
 from deepagents import create_deep_agent
-from deepagents.backends import FilesystemBackend
+from deepagents.backends import CompositeBackend, FilesystemBackend
 
 load_dotenv()
 
@@ -22,6 +22,7 @@ from research_agent.prompts import (
     SUBAGENT_DELEGATION_INSTRUCTIONS,
 )
 from research_agent.tools import tavily_search, think_tool
+from skills.arxiv.tools import arxiv_search
 
 # Limits
 max_concurrent_research_units = 3
@@ -47,10 +48,10 @@ research_sub_agent = {
     "name": "research-agent",
     "description": "Delegate research to the sub-agent researcher. Only give this researcher one topic at a time.",
     "system_prompt": RESEARCHER_INSTRUCTIONS.format(date=current_date),
-    "tools": [tavily_search, think_tool],
+    "tools": [tavily_search, arxiv_search, think_tool],
 }
 
-# Model Gemini 3 
+# Model Gemini 3
 # model = ChatGoogleGenerativeAI(model="gemini-3-pro-preview", temperature=0.0)
 
 # Model Claude 4.5
@@ -58,11 +59,18 @@ model = init_chat_model(model="anthropic:claude-sonnet-4-5-20250929", temperatur
 
 # Create the agent
 os.makedirs("reports", exist_ok=True)
+os.makedirs("skills", exist_ok=True)
+
+backend = CompositeBackend(
+    default=FilesystemBackend(root_dir="reports", virtual_mode=True),
+    routes={"/skills/": FilesystemBackend(root_dir="skills", virtual_mode=True)},
+)
 
 agent = create_deep_agent(
     model=model,
-    tools=[tavily_search, think_tool],
+    tools=[tavily_search, arxiv_search, think_tool],
     system_prompt=INSTRUCTIONS,
     subagents=[research_sub_agent],
-    backend=FilesystemBackend(root_dir="reports", virtual_mode=True),
+    backend=backend,
+    skills=["/skills/"],
 )
